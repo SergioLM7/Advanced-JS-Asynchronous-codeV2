@@ -46,9 +46,7 @@ const getAllImagesByBreed = async () => {
         return Promise.reject(new Error(`¡Error HTTP! Estado: ${respuesta.status}`));
       } else {
         let respuestaOK = await respuesta.json();
-        console.log(respuestaOK);
         const imagenesKomondor = respuestaOK.message;
-        console.log(imagenesKomondor);
         return imagenesKomondor;
       }
     } catch (error) {
@@ -109,11 +107,74 @@ const printGithubUserProfile = async (username) => {
           );
         } else {
           let respuestaOK = await respuesta.json();
-          console.log(respuestaOK);
-            return respuestaOK;
+          
+          const bodyHTML = document.querySelector('body');
+          const imgHTML = document.createElement('img');
+          const divNuevo = document.createElement('h3');
+          const avatar = respuestaOK.avatar_url;
+          const name = respuestaOK.name;
+          divNuevo.innerHTML = respuestaOK.name;
+          imgHTML.src= respuestaOK.avatar_url;
+          bodyHTML.append(imgHTML, divNuevo);  
+
+          return {avatar_url:avatar, name};
         }
       } catch (error) {
         throw console.log(`Este es el error: ${error.status}`);
       }
-    //section
+};
+
+//7. Crea una función getAndPrintGitHubUserProfile(username) que contenga 
+//una petición a la API para obtener información de ese usuario y devuelva 
+//un string que represente una tarjeta HTML como en el ejemplo, la estructura debe ser exactamente la misma.
+const getAndPrintGitHubUserProfile = async(username) => {
+  try {
+    const respuesta = await fetch(`https://api.github.com/users/${username}`, {
+      method: 'GET',
+    });
+    if (!respuesta.ok) {
+      return Promise.reject(
+        new Error(`¡Error HTTP! Estado: ${respuesta.status}`)
+      );
+    } else {
+      let respuestaOK = await respuesta.json();
+      return `<section><img src="${respuestaOK.avatar_url}" alt="${respuestaOK.name}"><h1>${respuestaOK.name}</h1><p>Public repos: ${respuestaOK.public_repos}</p></section>`
+    }
+  } catch (error) {
+    throw console.log(`Este es el error: ${error.status}`);
+  }
+};
+
+// 9.- Dada una lista de usuarios de github guardada en una array,crea una funcion 
+//fetchGithubUsers(userNames) que utilice 'https://api.github.com/users/${name}' 
+//para obtener el nombre de cada usuario.
+const userNames = ['octocat', 'alenriquez96', 'alejandroereyesb'];
+
+const fetchGithubUsers = async(userNames) => {
+    try {
+    const promises = userNames.map((name) =>
+      fetch(`https://api.github.com/users/${name}`)
+        .then((respuesta) => {
+            if (!respuesta.ok) {
+              throw new Error(`HTTP error! Status: ${respuesta.status}`);
+            }
+            return respuesta.json();
+    }))
+
+    const resultado = await Promise.all(promises);
+   
+    if (resultado) {
+        resultado.forEach((user) => {
+            console.log(user.name, user.url);
+        })
+    } else {
+        console.log('error');
+    }
+
+    return resultado
+
+    } catch (error) {
+    throw console.log(`Este es el error: ${error.status}`);
+    }
+
 };
